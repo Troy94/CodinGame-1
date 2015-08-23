@@ -1,7 +1,9 @@
-﻿/@Visual Studio Files
+﻿
+/@Visual Studio Files
 *.ini
 *.ico
 *.suo
 *.sln
 *.sdf
 *.pyproj
+@Visual Studio Files/.vs/CodinGame/v14/.suo
