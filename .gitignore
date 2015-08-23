@@ -1,3 +1,7 @@
 ﻿/@Visual Studio Files
 *.ini
 *.ico
+*.suo
+*.sln
+*.sdf
+*.pyproj
