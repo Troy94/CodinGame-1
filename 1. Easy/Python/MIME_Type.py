@@ -1,11 +1,11 @@
-hash = {}
-N = int(input())
-Q = int(input()) 
+﻿hash = {}
+N = int(raw_input())
+Q = int(raw_input()) 
 for i in range(N):
-    ext, type = input().split()
+    ext, type = raw_input().split()
     hash[ext.lower()] = type
 for i in range(Q):
-    file = input()
+    file = raw_input()
     if '.' in file:
         file = file.split('.')[-1]
         print(hash.get(file.lower(),"UNKNOWN"))
