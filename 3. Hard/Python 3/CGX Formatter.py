@@ -17,6 +17,7 @@ nl = 0
 cur = 0
 trimed = ''
 
+
 for c in s:
     if c== '\'':
         quo = quo^1
