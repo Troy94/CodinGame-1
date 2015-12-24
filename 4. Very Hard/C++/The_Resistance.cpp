@@ -1,10 +1,10 @@
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
-//
+//https://www.codingame.com/ide/28851516be94dd1da9c26c054ed61ccdfcde661
 
 #include <math.h>
 #include <time.h>
@@ -39,55 +39,65 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-stack<int> st;
+
+int len, n;
 
 char code[100000];
-char dict[100000][100];
-char alphabet[26][10]{".-","-...","-.-.","-..",".","..-.",  // a-f
-				"--.","....","..",".---","-.-",".-..",       // g-l
-				"--","-.","---",".--.","--.-",".-.",         // m-r
-				"...","-","..-","...-",".--","-..-",       //s-x
-				"-.--","--.."};								  //y-z
-int n;
+bool calc[10001];
+ll int DP[10001];
+vector<int> words;
 
-void wordToMorse(char word[100]){
+char alphabet[26][10] = { 
+".-","-...","-.-.","-..",".","..-.",	// a-f
+"--.","....","..",".---","-.-",".-..",	// g-l
+"--","-.","---",".--.","--.-",".-.",	// m-r
+"...","-","..-","...-",".--","-..-",	// s-x
+"-.--","--.." };						// y-z
 
-	char morse[100]="";
-	int len = strlen(word);
+char original[10000][100],dict[10000][100];
+
+void wordToMorse(char original[100], char dict[100]) {
+
+	char morse[100] = "";
+	int len = strlen(original);
 	REP(i, len)
-		strcat(morse, alphabet[word[i] - 'A']);
-	strcpy(word, morse);
+		strcat(morse, alphabet[original[i] - 'A']);
+	strcpy(dict, morse);
 
 }
 
-ll int matchM(char *s){
+ll int DFS(int k) {
 
-	if (s[0] == 0){
+	if (k==len) {
 		return 1;
 	}
 
-	ll int res = 0;
-	REP(i, n){
-		if (!strncmp(dict[i], s, strlen(dict[i])))
-			res += matchM(s + strlen(dict[i]));
+	if (calc[k])
+		return DP[k];
+
+	REP(i, n) {
+		if (strncmp(code+k, dict[i], strlen(dict[i]))==0) {
+			words.push_back(i);
+			DP[k] += DFS(k+strlen(dict[i]));
+			words.pop_back();
+		}
 	}
-
-	return res;
-
+	calc[k] = true;
+	return DP[k];
 }
 
-int main(){
-
-
+int main() {
 
 	scanf("%s", code);
+	len = strlen(code);
 	scanf("%d", &n);
-	REP(i, n){
-		scanf("%s", dict[i]);
-		wordToMorse(dict[i]);
+	REP(i, n) {
+		scanf("%s", original[i]);
+		wordToMorse(original[i], dict[i]);
 	}
-	printf("%lld\n", matchM(code));
+	printf("%lld\n", DFS(0));
+	sp;
 	return 0;
 }
 
-//
+//Solved
