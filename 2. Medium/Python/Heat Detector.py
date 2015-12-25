@@ -1,11 +1,11 @@
-w,h = [int(i) for i in input().split()]
-n = int(input())
-x,y = [int(i) for i in input().split()]
+﻿w,h = [int(i) for i in raw_input().split()]
+n = int(raw_input())
+x,y = [int(i) for i in raw_input().split()]
 lx,hx = [0,w-1]
 ly,hy = [0,h-1]
 
 while 1:
-    dir = input()
+    dir = raw_input()
     if dir == "U":
         hy = y-1
     elif dir == "UR":
@@ -28,4 +28,4 @@ while 1:
         hx = x-1
     x = (lx+hx)//2
     y = (ly+hy)//2
-    print(x,y)
+    print x,y 
