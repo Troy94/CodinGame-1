@@ -39,18 +39,37 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int a[100000];
+char s[1000][1000];
 
 int main(){
 
-	int n;
-	scanf("%d", &n);
-	
-	while(1){
-		
+	int w, h;
+	scanf("%d%d", &w, &h);
+	DB("%d %d\n", w, h);
+	REP(i, h) {
+		scanf("%s", s[i]);
+		DB("%s\n", s[i]);
 	}
-	
+	int y = h-1, x = 0;
+	while (true) {
+
+		if (y<h-1 && s[y+1][x]=='.')
+			y++;
+		else if (s[y][x+1]=='.')
+			x++;
+		else if (y>0 && x<w-1 && s[y-1][x+1]=='.') {
+			y--;
+			x++;
+		}
+		else
+			break;
+	}
+	if (x == w-1)
+		printf("SUCCESS\n");
+	else
+		printf("%d %d\n", x, h-y-1);
+	sp;
 	return 0;
 }
 
-//
+//Solved

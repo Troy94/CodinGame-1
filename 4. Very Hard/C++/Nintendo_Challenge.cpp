@@ -40,31 +40,106 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int main(){
-	unsigned int x, size;
-	bitset<64> b;
+vector<int> poly[100];
 
-	scanf("%d", &size);
+int findMSB(unsigned int n) {
+	
+	FORD(i, 31, 0) {
+		if (n & 1<<i)
+			return i;
+	}
+	return -1;
+}
 
-	for (int i = 0; i < size / 16; i++){
-		scanf("%x", &x);
-		REP(j, 32){
-			b[63 - i * 32 - j] = x % 2;
-			x /= 2;
+int polyDivide(unsigned int a, unsigned int b) {
+
+	int res = 0, rem = a;
+
+	while (rem>=b && rem!=0) {
+		int ma = findMSB(rem), mb = findMSB(b);
+		rem^=b<<(ma-mb);
+	}
+
+	return rem;
+
+}
+
+bool checkPrimality(unsigned int n, unsigned int d) {
+
+	FOR(i, 1, d/2) {
+		REP(j, poly[i].size()) {
+			if (polyDivide(n, poly[i][j])==0)
+				return false;
 		}
 	}
-	/*
-	for (int i = 0; i < size / 16; i++)
-		b[i] = 0;
+	return true;
 
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			b[(i+j) / 32] ^= (   a[i/32] >> (i%32)   &   a[j/32+size/32] >> (j%32)   &   1) << (i+j)%32;
+}
 
-	for (int i = 0; i < size / 16; i++)
-		cout << hex << b[i] << " ";
+void generatePrimePolynomials() {
 
-		*/
+	poly[1].push_back(2);
+	poly[1].push_back(3);
+	FOR(i, 2, 16) {
+		FOR(j, 1<<i, (2<<i)-1) {
+			bool prime = checkPrimality(j, i);
+			if (prime)
+				poly[i].push_back(j);
+		}
+	}
+
+
+}
+
+void encrypt(unsigned int a[16], unsigned int b[16], int size) {
+
+	REP(i, size) {
+		REP(j, size) {
+			b[(i + j) / 32] ^= ( ( a[i/32] >> (i%32)          )  &
+								 ( a[j/32 + size/32] >> (j%32))  & 
+								 ( 1                          )   ) << ((i+j)%32);
+		}
+	}
+
+}
+
+void encrypt32(unsigned int a[16], unsigned int b[16]) {
+
+	ll int test = 0;
+	REP(i, 32) {
+		REP(j, 32) {
+			test ^= (ll int)((a[0]>>i) &
+					 (a[1]>>j) &
+					 (1)) << ((i+j));
+			b[(i+j)/32] ^= ( ( a[0]>>i ) &
+							 ( a[1]>>j ) &
+							 (    1    )  ) << ((i+j)%32) ;
+		}
+	}
+
+}
+
+int main(){
+
+	generatePrimePolynomials();
+	int size=32;
+	unsigned int a[16], b[16];
+
+	while (true) {
+		REP(i, 2)
+			scanf("%x", &a[i]);
+
+		REP(i, 2)
+			b[i] = 0;
+
+		encrypt32(a, b);
+
+		REP(i, 2)
+			printf("%08x ", b[i]);
+		printf("\n\n");
+	}
+
+	sp;
 	return 0;
 }
 //
