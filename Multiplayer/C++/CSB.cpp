@@ -38,20 +38,21 @@ using namespace std;
 #define ll long long
 #define pii pair<int,int>
 #define MOD 1000000007
+#define PI 3.1415926535898
 
 struct point {
-	int x, y;
+	double x, y;
 public:
 	inline point() {
 		x = 1;
 		y = 1;
 	}
-	inline point(int px, int py) {
+	inline point(double px, double py) {
 		x = px;
 		y = py;
 	}
 	inline void print() {
-		printf("%d %d\n", x, y);
+		printf("%d %d\n", (int)x, (int)y);
 	}
 	inline int manhatanDistance(point p) {
 		return abs(x-p.x) + abs(y-p.y);
@@ -72,7 +73,7 @@ public:
 		return point(x-rhs.x, y-rhs.y);
 	}
 	inline point operator * (double k) {
-		return point((int)(x*k), (int)(y*k));
+		return point(x*k, y*k);
 	}
 	inline point operator += (point rhs) {
 		x += rhs.x;
@@ -90,14 +91,12 @@ public:
 		return *this;
 	}
 
-
 };
 
 struct pod {
 	int next_cp;
 	double angle;
 	point loc, speed;
-	
 };
 
 int laps, cp_count;
@@ -106,59 +105,53 @@ pod player[2], enemy[2];
 
 vector<point> checkpoints;
 
+inline point round_point(point p) {
+	return point(round(p.x), round(p.y));
+}
+
+inline point truncate_point(point p) {
+	return point((int)p.x, (int)p.y);
+}
+
 inline double degtorad(double deg) {
-	return deg*3.14159265358979/180;
+	return deg*PI/180;
 }
 
 inline double radtodeg(double rad) {
-	return rad*180/3.14159265358979;
+	return rad*180/PI;
 }
+
+inline double smalldiffAngle(double a, double b) {
+
+	double maxang = max(a, b), minang = min(a, b);
+	double alpha = maxang-minang, beta = minang+(360-maxang);
+	return alpha<beta?-alpha:beta;
+}
+
+
 
 point predict(pod p, int thrust, point target, int turns) {
 
 	REP(i, turns) {
 
 		double theta = radtodeg(atan2(target.y-p.loc.y, target.x-p.loc.x));
+		theta = fmod(theta + 360, 360);
+		double diff = smalldiffAngle(theta, p.angle);
 
-		if (theta<0)
-			theta += 360;
+		if (diff > +18)
+			diff = +18;
+		if (diff < -18)
+			diff = -18;
 
-		//DB("\nTheta = %f\n", theta);
+		p.angle = fmod(p.angle + diff + 360, 360);
 
-		theta = (theta-p.angle);
 
-		if (theta>180)
-			theta = 180-theta;
-		if (theta<-180)
-			theta = 180 + theta;
+		point vt = point( cos(degtorad(p.angle))*thrust, sin(degtorad(p.angle))*thrust);
 
-		//DB("Diff = %f\n", theta);
-
-		if (theta > +18)
-			theta = +18;
-		if (theta < -18)
-			theta = -18;
-
-		//DB("Pre Update Angle = %f\n", p.angle);
-		p.angle -= theta;
-		if (p.angle<0)
-			p.angle += 360;
-		p.angle = fmod(p.angle, 360);
-
-		DB("Update Angle = %f\n", p.angle);
-
-		point vt = point( round(cos(degtorad(p.angle))*thrust), round(sin(degtorad(p.angle))*thrust));
-		//p.angle = round(p.angle);
-		//DB("Thrust %d %d\n", vt.x, vt.y);
-		//DB("Actual Thrust %.4f %.4f\n\n", (double)cos(degtorad(p.angle))*thrust, (double)sin(degtorad(p.angle))*thrust);
-		
-		//DB("Pre Speed = %d %d\n", p.speed.x, p.speed.y);
 		p.speed += vt;
-		//DB("Post Speed = %d %d\n", p.speed.x, p.speed.y);
-		p.loc += p.speed;
-		p.speed*=0.85;
-		//DB("Post Speed MUL = %d %d\n\n", p.speed.x, p.speed.y);
-		DB("Turn +%d = %5d, %5d\n", i+1, p.loc.x, p.loc.y);
+		p.loc = round_point(p.loc+p.speed);
+		p.speed = truncate_point(p.speed*0.85);
+		DB("Turn +%d = %5.2lf %5.2lf\n", i+1, p.loc.x, p.loc.y);
 	}
 	return p.loc;
 }
@@ -178,7 +171,7 @@ int main(){
 	
 	while(1){
 		REP(i, 2) {
-			scanf("%d %d %d %d %lf %d",
+			scanf("%lf %lf %lf %lf %lf %d",
 				  &player[i].loc.x, &player[i].loc.y,
 				  &player[i].speed.x, &player[i].speed.y,
 				  &player[i].angle, &player[i].next_cp);
@@ -186,18 +179,18 @@ int main(){
 		}
 
 		REP(i, 2)
-			scanf("%d %d %d %d %lf %d",
+			scanf("%lf %lf %lf %lf %lf %d",
 				  &enemy[i].loc.x  , &enemy[i].loc.y,
 				  &enemy[i].speed.x, &enemy[i].speed.y,
 				  &enemy[i].angle  , &enemy[i].next_cp);
 
 		int cp1 = player[0].next_cp, cp2 = player[1].next_cp;
 
-		printf("%d %d 100\n", checkpoints[cp1].x, checkpoints[cp1].y);
-		printf("%d %d 200\n", checkpoints[cp2].x, checkpoints[cp2].y);
-
+		printf("%d %d 100\n", 15000, 1000);
+		printf("%d %d 200\n", (int)checkpoints[cp2].x, (int)checkpoints[cp2].y);
+	
 		DB("\nPredications for POD 1:\n");
-		predict(player[0], 100, checkpoints[cp1], 5);
+		predict(player[0], 100, point(15000,1000), 10);
 
 		DB("\nEnd of Round %d\n", round);
 		round++;
