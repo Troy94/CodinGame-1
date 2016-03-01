@@ -128,9 +128,33 @@ inline double smalldiffAngle(double a, double b) {
 	return alpha<beta?-alpha:beta;
 }
 
+inline double distance(point a, point b) {
+	double x = (a.x-b.x), y = (a.y-b.y);
+	return sqrt(x*x + y*y);
+}
 
+bool pointinCheckpoint(point p, int cp) {
 
-point predict(pod p, int thrust, point target, int turns) {
+	if (distance(p, checkpoints[cp])<600)
+		return true;
+	else
+		return false;
+
+}
+
+double angle_3points(point a, point b, point c) {
+
+	point ab = a-b, bc = b-c;
+	double prod = ab.x*bc.x + ab.y*bc.y;
+	double mag = distance(a, b), distance(b, c);
+
+	return radtodeg(acos(prod/mag));
+
+}
+
+vector<point> predict(pod p, int thrust, point target, int turns) {
+
+	vector<point> res;
 
 	REP(i, turns) {
 
@@ -145,17 +169,16 @@ point predict(pod p, int thrust, point target, int turns) {
 
 		p.angle = fmod(p.angle + diff + 360, 360);
 
-
 		point vt = point( cos(degtorad(p.angle))*thrust, sin(degtorad(p.angle))*thrust);
 
 		p.speed += vt;
 		p.loc = round_point(p.loc+p.speed);
 		p.speed = truncate_point(p.speed*0.85);
+		res.push_back(p.loc);
 		DB("Turn +%d = %5.2lf %5.2lf\n", i+1, p.loc.x, p.loc.y);
 	}
-	return p.loc;
+	return res;
 }
-
 
 int main(){
 
@@ -185,12 +208,17 @@ int main(){
 				  &enemy[i].angle  , &enemy[i].next_cp);
 
 		int cp1 = player[0].next_cp, cp2 = player[1].next_cp;
+		int ncp1 = (player[0].next_cp+1)%cp_count, ncp2 = (player[1].next_cp+1)%cp_count;
 
-		printf("%d %d 100\n", 15000, 1000);
-		printf("%d %d 200\n", (int)checkpoints[cp2].x, (int)checkpoints[cp2].y);
-	
-		DB("\nPredications for POD 1:\n");
-		predict(player[0], 100, point(15000,1000), 10);
+		vector<point> predictions1 = predict(player[0], 0, checkpoints[cp1], 10);
+		vector<point> predictions2 = predict(player[1], 0, checkpoints[cp2], 10);
+		
+		double ang1 = angle_3points(player[0].loc, checkpoints[cp1], checkpoints[ncp1]);
+		
+		int turntonextcp = -1;
+		REP(i, 10) {
+			if(n)
+		}
 
 		DB("\nEnd of Round %d\n", round);
 		round++;
