@@ -135,7 +135,7 @@ inline double distance(point a, point b) {
 
 bool pointinCheckpoint(point p, int cp) {
 
-	if (distance(p, checkpoints[cp])<600)
+	if (distance(p, checkpoints[cp])<500)
 		return true;
 	else
 		return false;
@@ -146,15 +146,16 @@ double angle_3points(point a, point b, point c) {
 
 	point ab = a-b, bc = b-c;
 	double prod = ab.x*bc.x + ab.y*bc.y;
-	double mag = distance(a, b), distance(b, c);
+	double mag = distance(a, b) * distance(b, c);
+	DB("MAG = %lf   Prod = %lf\n", mag, prod);
 
-	return radtodeg(acos(prod/mag));
+	return radtodeg(acos(-prod/mag));
 
 }
 
-vector<point> predict(pod p, int thrust, point target, int turns) {
+vector<pod> predict(pod p, int thrust, point target, int turns) {
 
-	vector<point> res;
+	vector<pod> res;
 
 	REP(i, turns) {
 
@@ -174,8 +175,8 @@ vector<point> predict(pod p, int thrust, point target, int turns) {
 		p.speed += vt;
 		p.loc = round_point(p.loc+p.speed);
 		p.speed = truncate_point(p.speed*0.85);
-		res.push_back(p.loc);
-		DB("Turn +%d = %5.2lf %5.2lf\n", i+1, p.loc.x, p.loc.y);
+		res.push_back(p);
+		//DB("Turn +%d = %5.2lf %5.2lf\n", i+1, p.loc.x, p.loc.y);
 	}
 	return res;
 }
@@ -186,8 +187,9 @@ int main(){
 
 	scanf("%d %d", &laps, &cp_count);
 	REP(i, cp_count) {
-		int px, py;
-		scanf("%d %d", &px, &py);
+		double px, py;
+		scanf("%lf %lf", &px, &py);
+		DB("%lf %lf\n", px, py);
 		point p = { px, py };
 		checkpoints.push_back(p);
 	}
@@ -210,14 +212,51 @@ int main(){
 		int cp1 = player[0].next_cp, cp2 = player[1].next_cp;
 		int ncp1 = (player[0].next_cp+1)%cp_count, ncp2 = (player[1].next_cp+1)%cp_count;
 
-		vector<point> predictions1 = predict(player[0], 0, checkpoints[cp1], 10);
-		vector<point> predictions2 = predict(player[1], 0, checkpoints[cp2], 10);
+		vector<pod> predictions1 = predict(player[0], 0, checkpoints[cp1], 20);
+
+		vector<pod> predictions2 = predict(player[1], 0, checkpoints[cp2], 20);
 		
-		double ang1 = angle_3points(player[0].loc, checkpoints[cp1], checkpoints[ncp1]);
 		
-		int turntonextcp = -1;
-		REP(i, 10) {
-			if(n)
+		int turntonextcp1 = -1;
+		point landing_point1;
+		REP(i, predictions1.size()) {
+			if ( pointinCheckpoint(predictions1[i].loc, cp1)) {
+				landing_point1 = predictions1[i].loc;
+				turntonextcp1 = i+1;
+				break;
+			}
+		}
+
+		DB("Turns = %d\n", turntonextcp1);
+		double ang1 = 180-angle_3points(player[0].loc, checkpoints[cp1], checkpoints[ncp1]);
+		DB("Angle = %lf\n", ang1);
+
+		if (turntonextcp1>0 && (turntonextcp1+1)*18 <= ang1 && player[0].angle>0) {
+			printf("%d %d 0\n", (int)checkpoints[ncp1].x, (int)checkpoints[ncp1].y);
+		}
+		else {
+			printf("%d %d 100\n", (int)checkpoints[cp1].x, (int)checkpoints[cp1].y);
+		}
+
+		
+		int turntonextcp2 = -1;
+		point landing_point2;
+		REP(i, predictions2.size()) {
+			if (pointinCheckpoint(predictions2[i].loc, cp2)) {
+				landing_point2 = predictions2[i].loc;
+				turntonextcp2 = i+1;
+				break;
+			}
+		}
+		DB("Turns = %d\n", turntonextcp2);
+		double ang2 = 180-angle_3points(player[1].loc, checkpoints[cp2], checkpoints[ncp2]);
+		DB("Angle = %lf\n", ang2);
+
+		if (turntonextcp2>0 && (turntonextcp2+1)*18 <= ang2 && player[1].angle>0) {
+			printf("%d %d 0\n", (int)checkpoints[ncp2].x, (int)checkpoints[ncp2].y);
+		}
+		else {
+			printf("%d %d 75\n", (int)checkpoints[cp2].x, (int)checkpoints[cp2].y);
 		}
 
 		DB("\nEnd of Round %d\n", round);
