@@ -106,6 +106,7 @@ class Site {
   public:
 	// Common Variables
 	int id, r;
+	int goldRemaining, maxGoldRate;
 	class Point pos;
 	enum class SiteType type;
 	enum class PlayerType owner;
@@ -113,7 +114,7 @@ class Site {
 	int barracksDelay;
 	enum class UnitType barracksUnit;
 	// Mine Variables
-	int mineGoldRate;
+	int mineGoldRate, mineMaxGoldRate;
 	// Tower Variables
 	int towerHP, towerAttackRange;
 
@@ -179,6 +180,7 @@ const int COST_KNIGHT = 80;
 int siteCount;
 int unitCount;
 int gold, touchedSite;
+int curGoldRate;
 
 // Site Variables
 vector<class Site> allSites;
@@ -465,12 +467,16 @@ class Point evade(class Unit nearestEnemy) {
 void readSiteData() {
 
 	REP(i, siteCount) {
-		int id, _1, _2, structure, owner, param1, param2;
-		scanf("%d %d %d %d %d %d %d", &id, &_1, &_2, &structure, &owner, &param1, &param2);
+		int id, goldRemaining, maxGoldRate, structure, owner, param1, param2;
+		scanf("%d %d %d %d %d %d %d", &id, &goldRemaining, &maxGoldRate, &structure, &owner, &param1, &param2);
 		int siteIndex = findIndexOfSiteByID(id);
 		class Site &site = allSites[siteIndex];
 		site.type = SiteType(structure);
 		site.owner = PlayerType(owner);
+		site.goldRemaining = goldRemaining;
+		if (maxGoldRate != -1) {
+			site.maxGoldRate = maxGoldRate;
+		}
 
 		if (site.type == SiteType::TOWER) {
 			site.towerHP = param1;
@@ -499,6 +505,15 @@ void readUnitData() {
 		allUnits.pb(Unit(hp, pos, PlayerType(owner), UnitType(type)));
 
 		//DB("UNIT = %d %d %d %d %d\n", x, y, owner, type, hp);
+	}
+}
+
+void calculateGlobals() {
+
+	// Calculate the current ammount of gold being generated
+	curGoldRate = 0;
+	REP(i, friendlyMines.size()) {
+		curGoldRate += friendlyMines[i].mineGoldRate;
 	}
 }
 
@@ -560,11 +575,11 @@ int main() {
 		}
 		else {
 			// Re-energize mines
-			DB("MINE RATES : %d %d", friendlyMines[0].mineGoldRate, friendlyMines[1].mineGoldRate);
-			if (friendlyMines[0].mineGoldRate < 5) {
+			DB("MAX MINE RATES : %d %d", friendlyMines[0].maxGoldRate, friendlyMines[1].maxGoldRate);
+			if (friendlyMines[0].mineGoldRate < friendlyMines[0].maxGoldRate) {
 				printf("BUILD %d MINE\n", friendlyMines[0].id);
 			}
-			else if (friendlyMines[1].mineGoldRate < 5) {
+			else if (friendlyMines[1].mineGoldRate < friendlyMines[1].maxGoldRate) {
 				printf("BUILD %d MINE\n", friendlyMines[1].id);
 			}
 			// Repair Towers
