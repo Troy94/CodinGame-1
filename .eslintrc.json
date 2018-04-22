@@ -1,0 +1,22 @@
+{
+    "env": {
+        "es6": true
+    },
+    "extends": "standard",
+    "globals": {
+        "readline": false,
+        "print": false
+    },
+    "rules": {
+        "brace-style": [2, "stroustrup"],
+        "indent": ["error", 4],
+        "max-len": [2, {
+            "code": 240,
+            "ignoreUrls": true
+        }],
+        "no-invalid-this": 1,
+        "no-var": 0,
+        "one-var": ["off", "always"],
+        "semi": [1, "always"]
+    }
+}
