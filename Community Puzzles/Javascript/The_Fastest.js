@@ -1,3 +1,5 @@
+// https://www.codingame.com/ide/puzzle/the-fastest
+
 var list = [];
 var n = parseInt(readline());
 for (var i = 0; i < n; i++) {
