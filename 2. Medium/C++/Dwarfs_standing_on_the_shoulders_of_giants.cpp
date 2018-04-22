@@ -1,91 +1,87 @@
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+*  $DollarAkshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
-//
+//https://www.codingame.com/ide/puzzle/dwarfs-standing-on-the-shoulders-of-giants
 
+#include <algorithm>
+#include <assert.h>
+#include <ctype.h>
+#include <deque>
+#include <iostream>
+#include <map>
+#include <math.h>
+#include <queue>
+#include <set>
+#include <stack>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <ctype.h>
+#include <string>
 #include <time.h>
-#include <assert.h>
-#include <algorithm>
-#include <iostream>
-#include <queue>
-#include <stack>
 #include <vector>
 
 using namespace std;
 
 #define sp system("pause")
-#define FOR(i,a,b) for(int i=a;i<=b;++i)
-#define FORD(i,a,b) for(int i=a;i>=b;--i)
-#define REP(i,n) FOR(i,0,(int)n-1)
-#define DB(s,x) fprintf(stderr,s,x)
-#define MS0(x) memset(x,0,sizeof(x))
-#define MS1(x) memset(x,1,sizeof(x))
-#define SORT(a,n) sort(begin(a),begin(a)+n)
-#define REV(a,n) reverse(begin(a),begin(a)+n)
+#define FOR(i, a, b) for (int i = a; i <= b; ++i)
+#define FORD(i, a, b) for (int i = a; i >= b; --i)
+#define REP(i, n) FOR(i, 0, (int)n - 1)
+#define pb(x) push_back(x)
+#define mp(a, b) make_pair(a, b)
+#define MSX(a, x) memset(a, x, sizeof(a))
+#define SORT(a, n) sort(begin(a), begin(a) + n)
 #define ll long long
+#define pii pair<int, int>
 #define MOD 1000000007
-struct point{
-	int x, y;
-};
 
-vector<int> graph[100000];
+int indeg[10000];
+int outdeg[10000];
+bool v[10000];
+vector<int> graph[10000];
 
-char influenced[100000];
+int DFS(int s) {
+	v[s] = true;
 
-int bfs(int s){
-
-	queue<pair<int, int>> q;
-	pair<int, int> u;
-	int ans=1, v[100000];
-	MS0(v);
-
-	v[s] = 1;
-	q.push(make_pair(s,1));
-
-	while (!q.empty()){
-		u = q.front();
-		q.pop();
-		int size = graph[u.first].size();
-		REP(i, size){
-			if (!v[graph[u.first][i]]){
-				ans = max(ans, u.second + 1);
-				q.push(make_pair(graph[u.first][i], u.second + 1));
-				v[graph[u.first][i]] = 1;
-			}
-		}
+	int res = 1;
+	REP(i, graph[s].size()) {
+		int childLen = DFS(graph[s][i]) + 1;
+		res = max(res, childLen);
 	}
-	return ans;
 
+	v[s] = false;
+	return res;
 }
 
+int main() {
 
-int main(){
-
-	int n,x,y,last=-1;
+	int n;
 	scanf("%d", &n);
-	REP(i, n){
-		scanf("%d%d", &x, &y);
-		graph[x].push_back(y);
-		influenced[y] = 1;
-		last = max(x, last);
-		last = max(y, last);
+	REP(i, n) {
+		int u, v;
+		scanf("%d %d", &u, &v);
+		outdeg[u]++;
+		indeg[v]++;
+		graph[u].pb(v);
 	}
 
-	int ans = 0;
-	FOR(i, 0, last){
-		if (!influenced[i] && graph[i].size() > 0)
-			ans = max(ans, bfs(i));
+	vector<int> roots;
+	REP(i, 10000) {
+		if (outdeg[i] > 0 && indeg[i] == 0) {
+			roots.pb(i);
+		}
 	}
 
-	printf("%d\n",ans);
+	int longestPath = 0;
+	REP(i, roots.size()) {
+		int len = DFS(roots[i]);
+		longestPath = max(longestPath, len);
+	}
+
+	printf("%d\n", longestPath);
+
 	return 0;
 }
 
