@@ -534,6 +534,13 @@ class Point evade(class Unit nearestEnemy) {
 	return friendlyQueen.pos + delta;
 }
 
+class Point evade(class Site nearestEnemy) {
+	class Point delta = friendlyQueen.pos - nearestEnemy.pos;
+	double distFromQueen = nearestEnemy.pos.distance(friendlyQueen.pos);
+	delta = delta * (QUEEN_SPEED / distFromQueen);
+	return friendlyQueen.pos + delta;
+}
+
 // Calculate some global variables
 void calculateGlobals() {
 
@@ -574,11 +581,25 @@ class Site findSuitableMine() {
 class Site findRepairableTower() {
 
 	class Site res;
+	int minHP = TOWER_HP;
 	REP(i, friendlyTowers.size()) {
 		class Site tower = friendlyTowers[i];
-		if (tower.towerHP <= TOWER_HP * 0.90) {
+		if (tower.towerHP <= minHP) {
 			res = tower;
-			break;
+			minHP = tower.towerHP;
+		}
+	}
+
+	return res;
+}
+
+int enemyTowersInRange(class Point p) {
+
+	int res = 0;
+	REP(i, enemyTowers.size()) {
+		class Site tower = enemyTowers[i];
+		if (p.distance(tower.pos) <= tower.towerAttackRange) {
+			res++;
 		}
 	}
 
@@ -587,15 +608,25 @@ class Site findRepairableTower() {
 
 bool isQueenInDanger() {
 
+	int towersCloseBy = 0;
 	int kightsCloseBy = 0;
+	int senseDistance = 200;
+
+	REP(i, enemyTowers.size()) {
+		class Site tower = enemyTowers[i];
+		if (tower.pos.distance(friendlyQueen.pos) <= tower.towerAttackRange + QUEEN_SPEED + 10) {
+			towersCloseBy++;
+		}
+	}
+
 	REP(i, enemyKnights.size()) {
 		class Unit knight = enemyKnights[i];
-		if (knight.pos.distance(friendlyQueen.pos) <= 120) {
+		if (knight.pos.distance(friendlyQueen.pos) <= senseDistance) {
 			kightsCloseBy++;
 		}
 	}
 
-	return kightsCloseBy >= friendlyQueen.hp / 15.0 ? true : false;
+	return (kightsCloseBy + towersCloseBy) > 0 ? true : false;
 }
 
 void findMinesAndTowers() {
@@ -674,49 +705,33 @@ int main() {
 		debuggingInfo();
 
 		if (isQueenInDanger()) {
-			class Point evadePos = evade(enemyKnights[0]);
-			turnAction = "MOVE " + to_string(evadePos.x) + " " + to_string(evadePos.y);
+			turnAction = "MOVE " + to_string(friendlyBaseCenter.x) + " " + to_string(friendlyBaseCenter.y);
 		}
 		else if (pendingActions.empty() == false) {
 			turnAction = pendingActions.front();
 			pendingActions.pop();
 		}
-		else if (friendlyMines.size() < 3) {
-			class Site mine = findSuitableMine();
-			if (mine.id != -1) {
-				turnAction = "BUILD " + to_string(mine.id) + " MINE";
-				if (touchedSite == mine.id) {
-					REP(i, mine.maxGoldRate - 1) {
-						pendingActions.push("BUILD " + to_string(mine.id) + " MINE");
-					}
-				}
-			}
-		}
-		else if (friendlyBarracks.size() < 1 && gold >= 160) {
+		else if (friendlyBarracks.size() < 1) {
 			if (neutralSites.size() > 0) {
 				turnAction = "BUILD " + to_string(neutralSites[0].id) + " BARRACKS-KNIGHT";
 			}
 		}
-		else if (friendlyTowers.size() < 3) {
-			class Site buildTower = neutralSites[0];
-			if (buildTower.id != -1) {
-				turnAction = "BUILD " + to_string(buildTower.id) + " TOWER";
-				if (touchedSite == buildTower.id) {
-					REP(i, 6) {
-						pendingActions.push("BUILD " + to_string(buildTower.id) + " TOWER");
-					}
+		else if (friendlyTowers.size() < 9 && neutralSites.size() > 0 && enemyTowersInRange(neutralSites[0].pos) == 0) {
+			turnAction = "BUILD " + to_string(neutralSites[0].id) + " TOWER";
+			if (touchedSite == neutralSites[0].id) {
+				REP(i, 6) {
+					pendingActions.push("BUILD " + to_string(neutralSites[0].id) + " TOWER");
 				}
-			}
-		}
-		else if (friendlyBarracks.size() < 2) {
-			if (neutralSites.size() > 0) {
-				turnAction = "BUILD " + to_string(neutralSites[0].id) + " BARRACKS-KNIGHT";
 			}
 		}
 		else {
 			class Site tower = findRepairableTower();
 			if (tower.id != -1) {
 				turnAction = "BUILD " + to_string(tower.id) + " TOWER";
+				int fullHealTurns = (TOWER_HP - (tower.towerHP + 100)) / 100;
+				REP(i, fullHealTurns) {
+					pendingActions.push("BUILD " + to_string(tower.id) + " TOWER");
+				}
 			}
 			else {
 				class Site mine = findSuitableMine();
