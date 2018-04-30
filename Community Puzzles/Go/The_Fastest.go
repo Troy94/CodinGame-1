@@ -1,3 +1,11 @@
+/*~~~~~~~~~~~~~~~~~~*
+*                  *
+*  $DollarAkshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
+
+//https://www.codingame.com/ide/puzzle/the-fastest
+
 package main
 
 import "fmt"
