@@ -27,3 +27,5 @@ class Solution {
         System.out.println(timings[0]);
     }
 }
+
+// Solved
