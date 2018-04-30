@@ -223,7 +223,7 @@ const int BIKE_HEURESTIC_COST = 100;
 class GameState game;
 string bestMove;
 
-int backTrack(int turn) {
+int backtrack(int turn) {
 
 	class GameState gameCopy = game;
 
@@ -243,7 +243,7 @@ int backTrack(int turn) {
 
 	// Calculate Speed Move Value
 	game.simSpeed();
-	val = backTrack(turn + 1);
+	val = backtrack(turn + 1);
 	if (val > bestVal) {
 		bestVal = val;
 		if (turn == 0) {
@@ -257,7 +257,7 @@ int backTrack(int turn) {
 
 	// Calculate Slow Move Value
 	game.simSlow();
-	val = backTrack(turn + 1);
+	val = backtrack(turn + 1);
 	if (val > bestVal) {
 		bestVal = val;
 		if (turn == 0) {
@@ -271,7 +271,7 @@ int backTrack(int turn) {
 
 	// Calculate Jump Move Value
 	game.simJump();
-	val = backTrack(turn + 1);
+	val = backtrack(turn + 1);
 	if (val > bestVal) {
 		bestVal = val;
 		if (turn == 0) {
@@ -286,7 +286,7 @@ int backTrack(int turn) {
 	// Calculate Up Move Value
 	if (game.canGoUp()) {
 		game.simUp();
-		val = backTrack(turn + 1);
+		val = backtrack(turn + 1);
 		if (val > bestVal) {
 			bestVal = val;
 			if (turn == 0) {
@@ -302,7 +302,7 @@ int backTrack(int turn) {
 	// Calculate Down Move Value
 	if (game.canGoDown()) {
 		game.simDown();
-		val = backTrack(turn + 1);
+		val = backtrack(turn + 1);
 		if (val > bestVal) {
 			bestVal = val;
 			if (turn == 0) {
@@ -315,10 +315,6 @@ int backTrack(int turn) {
 		game = gameCopy;
 	}
 
-	if (turn <= 0) {
-		DB("%d | BEST VAL : %d\n", turn, bestVal);
-	}
-
 	return bestVal;
 }
 
@@ -329,7 +325,6 @@ int main() {
 
 	REP(i, 4) {
 		scanf("%s", game.lane[i]);
-		DB("%s\n", game.lane[i]);
 	}
 
 	game.init();
@@ -343,7 +338,7 @@ int main() {
 		}
 		game.turnCalc();
 
-		backTrack(0);
+		backtrack(0);
 		clock_t end = clock();
 		DB("Time Taken : %.6f\n", ((double)end - start) / CLOCKS_PER_SEC);
 
